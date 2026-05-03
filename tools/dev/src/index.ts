@@ -955,6 +955,21 @@ addSharedOptions(cli.command("check [app]", "Print status and recent logs for qu
   },
 );
 
+addSharedOptions(cli.command("smoke", "Run end-to-end pipeline smoke (3 brands × 2 skills); requires daemon running"))
+  .option("--out <path>", "output root (default: .tmp/smoke)")
+  .option("--agent <id>", "agent id; overrides OD_SMOKE_AGENT (default: claude)")
+  .option("--timeout <seconds>", "per-combo timeout (default: 300)")
+  .action(async (options: CliOptions & { out?: string; agent?: string; timeout?: string }) => {
+    const { runSmoke } = await import("./smoke.js");
+    const timeoutMs = options.timeout ? Number(options.timeout) * 1000 : undefined;
+    await runSmoke({
+      config: resolveToolDevConfig(options),
+      outRoot: options.out,
+      agent: options.agent,
+      timeoutMs,
+    });
+  });
+
 cli.help();
 
 const rawCliArgs = process.argv.slice(2);
